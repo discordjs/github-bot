@@ -1,4 +1,4 @@
-name = "discordjs-packer-bot"
+name = "discordjs-bot"
 main = "./src/index.ts"
 compatibility_date="2025-07-19"
 

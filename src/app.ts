@@ -1,6 +1,6 @@
 import type { Octokit } from 'octokit';
 import { App } from 'octokit';
-import { logger, type Env } from './util.js';
+import { logger, type Env, type IssueCommentCreatedData, type IssueCommentEditedData } from './util.js';
 
 async function isPRGreen(octokit: Octokit, owner: string, repo: string, pullNumber: number): Promise<boolean> {
 	// First, get the PR data to get the head SHA
@@ -73,12 +73,11 @@ export function getApp(env: Env) {
 		logger.error({ err }, 'Webhook error');
 	});
 
-	// TODO: Swap to create for prod
-	app.webhooks.on('issue_comment.edited', async (data) => {
-		logger.debug('in comment edit');
+	const commentHandler = async (data: IssueCommentCreatedData | IssueCommentEditedData) => {
+		logger.debug('in comment handler');
 
-		if (!data.payload.comment.body.startsWith('pack this')) {
-			logger.debug(`Comment does not start with 'pack this': ${data.payload.comment.body}`);
+		if (!data.payload.comment.body.startsWith('@discord-js-bot pack this')) {
+			logger.debug({ body: data.payload.comment.body }, 'Comment does not start with "@discord-js-bot pack this"');
 			return;
 		}
 
@@ -94,7 +93,7 @@ export function getApp(env: Env) {
 
 		const {
 			data: { permission },
-		} = await data.octokit.rest.repos.getCollaboratorPermissionLevel({
+		} = await app.octokit.rest.repos.getCollaboratorPermissionLevel({
 			owner: data.payload.repository.owner.login,
 			repo: data.payload.repository.name,
 			username: data.payload.comment.user.login,
@@ -107,7 +106,7 @@ export function getApp(env: Env) {
 
 		if (
 			!(await isPRGreen(
-				data.octokit,
+				app.octokit,
 				data.payload.repository.owner.login,
 				data.payload.repository.name,
 				data.payload.issue.number,
@@ -117,9 +116,10 @@ export function getApp(env: Env) {
 		}
 
 		logger.debug('Beginning the pack process...');
+	};
 
-		// TODO: Invoke workflow
-	});
+	app.webhooks.on('issue_comment.created', commentHandler);
+	app.webhooks.on('issue_comment.edited', commentHandler);
 
 	return app;
 }
