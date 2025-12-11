@@ -10,3 +10,8 @@ APP_ID = "1631654"
 
 [observability.logs]
 enabled = true
+
+[[kv_namespaces]]
+binding = "PACK_STORAGE"
+id = "2a9b367d29214778ac9aeb6e7a275e9a"
+preview_id = "1cc9d482645d43f787bbacdca47cd782"

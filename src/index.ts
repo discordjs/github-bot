@@ -22,7 +22,7 @@ const server = {
 		try {
 			await verifyWebhookSignature(payloadString, signature, env.WEBHOOK_SECRET);
 		} catch (error) {
-			logger.warn({ error }, 'Invalid webhook signature');
+			logger.warn({ err: error }, 'Invalid webhook signature');
 			return new Response('webhook verification failed', {
 				status: 400,
 				headers: { 'content-type': 'application/json' },
@@ -44,7 +44,7 @@ const server = {
 				headers: { 'content-type': 'application/json' },
 			});
 		} catch (error) {
-			logger.error({ err: error }, 'Error processing webhook');
+			logger.error(error);
 			return new Response('internal server error', {
 				status: 500,
 				headers: { 'content-type': 'application/json' },
