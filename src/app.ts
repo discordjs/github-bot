@@ -69,6 +69,14 @@ async function isPRGreen(octokit: Octokit, owner: string, repo: string, pullNumb
 async function commentHandler(data: IssueCommentCreatedData | IssueCommentEditedData, env: Env) {
 	logger.debug('in comment handler');
 
+	if (data.payload.repository.owner.login !== 'discordjs' || data.payload.repository.name !== 'discord.js') {
+		logger.debug(
+			{ repository: data.payload.repository.name, owner: data.payload.repository.owner.login },
+			'Comment is not on the discord.js repository',
+		);
+		return;
+	}
+
 	if (!data.payload.comment.body.startsWith('@discord-js-bot pack this')) {
 		logger.debug({ body: data.payload.comment.body }, 'Comment does not start with "@discord-js-bot pack this"');
 		return;
@@ -118,7 +126,7 @@ async function commentHandler(data: IssueCommentCreatedData | IssueCommentEdited
 			comment_id: data.payload.comment.id,
 			content: 'eyes',
 		})
-		// eslint-disable-next-line promise/prefer-await-to-then
+		// eslint-disable-next-line promise/prefer-await-to-then, promise/prefer-await-to-callbacks
 		.catch((error) => logger.warn({ err: error }, 'Failed to update reactions on start'));
 
 	const ref = `refs/pull/${data.payload.issue.number}/head`;

@@ -51,6 +51,6 @@ const server = {
 			});
 		}
 	},
-};
+} satisfies ExportedHandler<Env>;
 
 export default server;
